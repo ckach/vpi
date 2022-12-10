@@ -1,6 +1,7 @@
 //const { createWallet} = require("./wallet");
 
 const TronWeb = require('tronweb');
+const hdWallet = require('tron-wallet-hd');
 
 const bodyPaser = require('body-parser');
 const express = require('express');
@@ -74,8 +75,7 @@ return;
 
     
     app.get('/api/mwallet', async (req, res) => {
-        const hdWallet = require('tron-wallet-hd');
-
+        
         const utils= hdWallet.utils;
         const seed = utils.generateMnemonic();
         const accounts = await utils.generateAccountsWithMnemonic(seed,1);
@@ -113,7 +113,25 @@ return;
 
 )
 
+app.get('/api/m2wallet/', (req, res) => {
+     
+ const Address =  require ('tron-address-mnemonic');
+ const mnemonic = Address.generateMnemonic();
+//console.log(mnemonic);
+ const address = new Address(mnemonic, 0);
+//console.log(address.master);
+ const addressInfo =  address.masterInfo;
+ console.log(addressInfo);
+//console.log(address.createAddress())
+    
+const m2wallet = [
+    {addressInfo},
+]
+res.send(m2wallet);
 
+    return;
+    } );
+    
 
 
 
