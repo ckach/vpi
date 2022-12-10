@@ -1,7 +1,9 @@
 //const { createWallet} = require("./wallet");
-
+const { PrivateKey } = require("bitcore-lib");
+const Mnemonic = require("bitcore-mnemonic");
 const TronWeb = require('tronweb');
-const hdWallet = require('tron-wallet-hd');
+//const hdWallet = require('tron-wallet-hd');
+const Address =  require ('tron-address-mnemonic');
 
 const bodyPaser = require('body-parser');
 const express = require('express');
@@ -72,7 +74,7 @@ res.send(wallet);
 return;
 } );
 
-
+/*
     
     app.get('/api/mwallet', async (req, res) => {
         
@@ -106,16 +108,16 @@ return;
         // Valid Address
         const isValidAddress1 = utils.validateAddress("Thdhjxhxxbxnbnbnsvsjdb");
         console.log(isValidAddress1) 
-        */
+       
 
         
     }
 
 )
+ */
 
 app.get('/api/m2wallet/', (req, res) => {
      
- const Address =  require ('tron-address-mnemonic');
  const mnemonic = Address.generateMnemonic();
 //console.log(mnemonic);
  const address = new Address(mnemonic, 0);
