@@ -56,23 +56,28 @@ app.post('/api/courses', (req, res) => {
     res.send(course);
 } );
 
-
 app.get('/api/wallet', (req, res) => {
 
-const Account = TronWeb.utils.accounts.generateAccount();
-const Address = Account.address.base58;
-const PrivateKey = Account.privateKey
-//const PublicKey = Account.publicKey;
-//const Hex = Account.hex;
-console.log(Address);
-console.log(PrivateKey);
+    const Account = TronWeb.utils.accounts.generateAccount();
+    const Address = Account.address.base58;
+    const PrivateKey = Account.privateKey;
+    //const PublicKey = Account.publicKey;
+    //const Hex = Account.hex;
+    
+    
+    console.log(Address);
+    console.log(PrivateKey);
+    
+    const wallet = [
+        { Address: Address} , 
+        {PrivateKey: PrivateKey},
+    ]
+    res.json(wallet);
+    return;
+    } );
 
-const wallet = [
-    { Address: Address , PrivateKey: PrivateKey},
-]
-res.send(wallet);
-return;
-} );
+
+    
 
 /*
     
@@ -208,10 +213,11 @@ var privateKey = req.params.privateKey;
 var ACCOUNT = req.params.ACCOUNT;
 var AMOUNT = req.params.AMOUNT;
 var CONTRACT = req.params.CONTRACT;
-
+var Address = req.params.Address;
    
    const transfer = [
-    {CONTRACT:CONTRACT}, 
+    {CONTRACT:CONTRACT},
+    {Address:Address}, 
     {privateKey:privateKey},
     {ACCOUNT:ACCOUNT},
    {AMOUNT:AMOUNT} 
@@ -230,7 +236,7 @@ async function main() {
 
     const contract = tronWeb.contract(abi.entrys, CONTRACT);
 
-    const balance = await contract.methods.balanceOf(ACCOUNT).call();
+    const balance = await contract.methods.balanceOf(Address).call();
     console.log("balance:", balance.toString());
 
     const resp = await contract.methods.transfer(ACCOUNT, AMOUNT*1000000).send();
@@ -246,6 +252,61 @@ async function main() {
     
  return;
 });
+
+
+// getBalance
+
+app.get('/api/balance/:privateKey/:CONTRACT/:Address', function(req, res) {
+        
+
+    const HttpProvider = TronWeb.providers.HttpProvider;
+    const fullNode = new HttpProvider("https://api.trongrid.io");
+    // const fullNode = new HttpProvider("http://192.168.1.162:8090");
+    const solidityNode = new HttpProvider("https://api.trongrid.io");
+    const eventServer = new HttpProvider("https://api.trongrid.io");
+    
+    var privateKey = req.params.privateKey;
+    var CONTRACT = req.params.CONTRACT;
+    var Address = req.params.Address;
+       
+       const details = JSON.stringify([
+        {privateKey:privateKey},
+        {CONTRACT:CONTRACT},
+        {Address:Address}, 
+
+    ])
+    res.json(details);
+
+   
+    
+    
+    const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
+    
+    
+    async function main() {
+        const {
+            abi
+        } = await tronWeb.trx.getContract(CONTRACT);
+        // console.log(JSON.stringify(abi));
+    
+        const contract = tronWeb.contract(abi.entrys, CONTRACT);
+    
+        const balance = await contract.methods.balanceOf(Address).call();
+        console.log("balance:", balance.toString());
+    
+     }
+      
+    
+       main().then(() => {
+            console.log("ok");
+        })
+        .catch((err) => {
+            console.log("error:", err);
+        });
+        
+     return;
+    });
+        
     
 
 
