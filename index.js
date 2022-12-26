@@ -132,12 +132,12 @@ const transfer = await multichainWallet.transfer({
 
 
 // get USDC ERC20 Balance
-app.get('/api/multi/usdcBalance', async (req, res)  => {
+app.get('/api/multi/usdcBalance/:Address', async (req, res)  => {
     var Address = req.params.Address;
 
 // Get the balance of an ERC20 token.
 const data = await multichainWallet.getBalance({
-    address: '0x2455eC6700092991Ce0782365A89d5Cd89c8Fa22',
+    address: Address, // '0x2455eC6700092991Ce0782365A89d5Cd89c8Fa22',
     network: 'ethereum',
     rpcUrl: 'https://rpc.ankr.com/eth',
     tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -149,7 +149,7 @@ const data = await multichainWallet.getBalance({
 });
 
 // Transferring ERC20 tokens(USDC) from one address to another.
-app.get('/api/multi/transferEth/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/transferUsdc/:PrivateKey/:Address/:Amount', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
