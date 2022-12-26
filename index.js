@@ -52,19 +52,19 @@ app.get('/api/multi/balance/:Address', async (req, res)  => {
 });
 
 
-app.get('/api/multi/transferBtc/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/sendbtc/:PrivateKey/:Address/:Amount', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
      // Transferring BTC from one address to another.
     const response = await multichainWallet.transfer({
 
-    //privateKey: 'L3tSvMViDit1GSp7mbV2xFCGv6M45kDNuSyNY9xyUxmUPBFrBkc4',
+    //privateKey: 'KymBvSspJW4NfLnJwgcBfzCV75PuXiv1ggcXLmRTpaa3wRLrgQJo',
     //recipientAddress: 'mgPVEgijcmNTTzZFCa8pwpEmWbaTbA2ega',
-    //amount: 0.003,
-    privateKey: privateKey,
-    recipientAddress: recipientAddress,
-    amount: amount,
+    //amount: 0.001,
+     privateKey: privateKey,
+     recipientAddress: recipientAddress,
+     amount: amount,
     network: 'bitcoin-testnet', // 'bitcoin' or 'bitcoin-testnet'
     fee: 10000, // Optional param default value is 10000
     subtractFee: false // Optional param default value is false
@@ -107,7 +107,7 @@ const ethdata = await multichainWallet.getBalance({
 });
 
 
-app.get('/api/multi/transferEth/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/sendeth/:PrivateKey/:Address/:Amount', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
@@ -149,7 +149,7 @@ const data = await multichainWallet.getBalance({
 });
 
 // Transferring ERC20 tokens(USDC) from one address to another.
-app.get('/api/multi/transferUsdc/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/sendusdc/:PrivateKey/:Address/:Amount', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
