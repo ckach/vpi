@@ -107,19 +107,21 @@ const ethdata = await multichainWallet.getBalance({
 });
 
 
-app.get('/api/multi/sendeth/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/sendeth/:PrivateKey/:Address/:Amount/:gasPrice', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
+    var gasPrice = req.params.gasPrice;
      // Transferring ETH from one address to another.
 const transfer = await multichainWallet.transfer({
+   
     recipientAddress:recipientAddress,// '0x9e2eC09b4729d840C53775eEa06aEC0883770b74',
     amount: amount, // 0.001,
     network: 'ethereum',
     rpcUrl: 'https://rpc.ankr.com/eth_goerli',
     privateKey: privateKey,
       //'0f9e5c0bee6c7d06b95204ca22dea8d7f89bb04e8527a2c59e134d185d9af8ad',
-    gasPrice: '10', // Gas price is in Gwei. Leave empty to use default gas price
+    gasPrice: gasPrice, // Gas price is in Gwei. Leave empty to use default gas price
     data: 'Money for transportation', // Send a message
   }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
   
@@ -149,10 +151,11 @@ const data = await multichainWallet.getBalance({
 });
 
 // Transferring ERC20 tokens(USDC) from one address to another.
-app.get('/api/multi/sendusdc/:PrivateKey/:Address/:Amount', async (req, res)  => {
+app.get('/api/multi/sendusdc/:PrivateKey/:Address/:Amount/:GasPrice', async (req, res)  => {
     var privateKey = req.params.PrivateKey;
     var recipientAddress = req.params.Address;
     var amount = req.params.Amount;
+    var gasPrice = req.params.GasPrice;
      
     // Transferring ERC20 tokens(USDC) from one address to another.
 const transfer = await multichainWallet.transfer({
@@ -162,7 +165,7 @@ const transfer = await multichainWallet.transfer({
     rpcUrl: 'https://rpc.ankr.com/eth',
     privateKey: privateKey,
       //'0f9e5c0bee6c7d06b95204ca22dea8d7f89bb04e8527a2c59e134d185d9af8ad',
-    gasPrice: '10', // Gas price is in Gwei. leave empty to use default gas price
+    gasPrice: gasPrice, // Gas price is in Gwei. leave empty to use default gas price
     tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
 
