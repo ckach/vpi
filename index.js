@@ -47,7 +47,7 @@ app.get('/api/multi/btcwalletmn/:Mnemonic', async (req, res)  => {
     network: 'bitcoin-testnet',
   });
     
-      console.log(wallet)
+      //console.log(wallet)
       res.json(wallet);
       return;
 });
@@ -63,7 +63,7 @@ app.get('/api/multi/balance/:Address', async (req, res)  => {
     network: 'bitcoin-testnet', // 'bitcoin' or 'bitcoin-testnet'
   });
     
-      console.log(data)
+     // console.log(data)
       res.json(data);
       return;
 });
@@ -86,7 +86,7 @@ app.get('/api/multi/sendbtc/:PrivateKey/:Address/:Amount', async (req, res)  => 
     fee: 10000, // Optional param default value is 10000
     subtractFee: false // Optional param default value is false
   });
-      console.log(response)
+      //console.log(response)
       res.json(response);
       return;
 });
@@ -101,7 +101,7 @@ app.get('/api/multi/ethwallet', async (req, res)  => {
         network: 'ethereum',
       });
     
-      console.log(wallet)
+      //console.log(wallet)
       res.json(wallet);
       return;
 });
@@ -118,7 +118,7 @@ app.get('/api/multi/ethwalletmn/:Mnemonic', async (req, res)  => {
     network: 'ethereum',
   });
     
-      console.log(wallet)
+     // console.log(wallet)
       res.json(wallet);
       return;
 });
@@ -137,7 +137,7 @@ const ethdata = await multichainWallet.getBalance({
     rpcUrl: 'https://rpc.ankr.com/eth_goerli',
   }); // NOTE - For otherEVM compatible blockchains all you have to do is change the rpcUrl.
   
-      console.log(ethdata)
+      //console.log(ethdata)
       res.json(ethdata);
       return;
 });
@@ -161,7 +161,7 @@ const transfer = await multichainWallet.transfer({
     data: 'Money for transportation', // Send a message
   }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
   
-      console.log(transfer)
+      //console.log(transfer)
       res.json(transfer);
       return;
 });
@@ -181,7 +181,7 @@ const data = await multichainWallet.getBalance({
     tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
   
-      console.log(data)
+      //console.log(data)
       res.json(data);
       return;
 });
@@ -205,7 +205,7 @@ const transfer = await multichainWallet.transfer({
     tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
 
-      console.log(transfer)
+      //console.log(transfer)
       res.json(transfer);
       return;
 });
@@ -227,7 +227,7 @@ app.get('/api/usdtwalletmn/:Mnemonic', (req, res) => {
    var mnemonic = req.params.Mnemonic;
    const wallet = TronWeb.fromMnemonic(mnemonic)
   
-    console.log(wallet);
+    //console.log(wallet);
     res.json(wallet);
     return;
 
