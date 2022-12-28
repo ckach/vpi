@@ -27,8 +27,25 @@ app.get('/api/multi/btcwallet', async (req, res)  => {
  
     const wallet = multichainWallet.createWallet({
         derivationPath: "", // Leave empty to use default derivation path
-        network: 'bitcoin-testnet',
+        network: 'bitcoin',
       });
+    
+      console.log(wallet)
+      res.json(wallet);
+      return;
+});
+
+// Generate an Bitcoin wallet from mnemonic.
+app.get('/api/multi/btcwalletmn/:Mnemonic', async (req, res)  => {
+ 
+    var mnemonic = req.params.Mnemonic;
+    
+      const wallet = multichainWallet.generateWalletFromMnemonic({
+    mnemonic: mnemonic,
+      //'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
+    derivationPath: "", // Leave empty to use default derivation path
+    network: 'bitcoin-testnet',
+  });
     
       console.log(wallet)
       res.json(wallet);
@@ -88,6 +105,25 @@ app.get('/api/multi/ethwallet', async (req, res)  => {
       res.json(wallet);
       return;
 });
+
+// Generate an Ethereum wallet from mnemonic.
+app.get('/api/multi/ethwalletmn/:Mnemonic', async (req, res)  => {
+ 
+    var mnemonic = req.params.Mnemonic;
+    
+      const wallet = multichainWallet.generateWalletFromMnemonic({
+    mnemonic: mnemonic,
+      //'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
+    derivationPath: "", // Leave empty to use default derivation path
+    network: 'ethereum',
+  });
+    
+      console.log(wallet)
+      res.json(wallet);
+      return;
+});
+
+
 
 // get ETH Balance
 app.get('/api/multi/ethBalance/:Address', async (req, res)  => {
@@ -185,9 +221,36 @@ app.get('/api/mtronweb', (req, res) => {
     return;
 } );
 
+// get USDT Address and Pk from mnemonic
+app.get('/api/usdtwalletmn/:Mnemonic', (req, res) => {
 
+   var mnemonic = req.params.Mnemonic;
+   const wallet = TronWeb.fromMnemonic(mnemonic)
+  
+    console.log(wallet);
+    res.json(wallet);
+    return;
 
+} );
+
+app.use((req, res, next) =>{
+    const error = new Error('Not found');
+    error.status(404);
+    next(error);
+})
+
+app.use((error,req, res, next) =>{
+    res.status(error.status || 500);
+    res.json({
+        error:{
+            message:error.message
+        }
+    });
     
+});
+
+
+   
 
 
 // TRX Send
