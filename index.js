@@ -173,7 +173,7 @@ async function main() {
 
 
 
-
+/*
 //https://github.com/iamnotstatic/multichain-crypto-wallet#native-coins
 // https://www.npmjs.com/package/multichain-crypto-wallet
 // Bitcoin  wallet setup 
@@ -374,7 +374,7 @@ const transfer = await multichainWallet.transfer({
 
 
 
-
+*/
 
 
 
