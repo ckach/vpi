@@ -1,9 +1,11 @@
 //const { createWallet} = require("./wallet");
 const { PrivateKey } = require("bitcore-lib");
 const Mnemonic = require("bitcore-mnemonic");
-const TronWeb = require('tronweb');
+
 //const hdWallet = require('tron-wallet-hd');
 const Address =  require ('tron-address-mnemonic');
+const multichainWallet = require('multichain-crypto-wallet');
+const TronWeb = require('tronweb');
 
 const bodyPaser = require('body-parser');
 const express = require('express');
@@ -16,30 +18,7 @@ app.use(express.json());
 app.use(bodyPaser.urlencoded())
 app.use(bodyPaser.json());
 
-const courses = [
-    {id:1, name:'course1'},
-    {id:2, name:'course2'},
-    {id:3, name:'course3'}
-]
 
-
-
-app.get('/', (req, res) => {
-    res.send('Hello World');
-    return;
-} );
-
-app.get('/api/courses', (req, res) => {
-    res.send([courses]);
-    return;
-} );
-
-app.get('/api/courses/:id', (req, res) => {
-   const course = courses.find(c => c.id === parseInt(req.params.id))
-   if (!course) res.status(404).send('The course ID not found');
-   res.send(course);
-   return;
-} );
 
 // get Address tronweb
 app.get('/api/mtronweb', (req, res) => {
@@ -49,91 +28,17 @@ app.get('/api/mtronweb', (req, res) => {
     return;
 } );
 
+// get USDT Address and Pk from mnemonic
+app.get('/api/usdtwalletmn/:Mnemonic', (req, res) => {
 
-app.get('/api/wallet', (req, res) => {
-
-    const Account = TronWeb.utils.accounts.generateAccount();
-    const Address = Account.address.base58;
-    const PrivateKey = Account.privateKey;
-    //const PublicKey = Account.publicKey;
-    //const Hex = Account.hex;
-    
-    
-    console.log(Address);
-    console.log(PrivateKey);
-    
-    const wallet = [
-        {Account: Account},
-        { Address: Address} , 
-        {PrivateKey: PrivateKey},
-    ]
+   var mnemonic = req.params.Mnemonic;
+   const wallet = TronWeb.fromMnemonic(mnemonic)
+  
+    //console.log(wallet);
     res.json(wallet);
     return;
-    } );
 
-
-    
-
-// tron mnemonic wallet create
-    
-    app.get('/api/mwallet', async (req, res) => {
-        
-        const utils= hdWallet.utils;
-        const seed = utils.generateMnemonic();
-        const accounts = await utils.generateAccountsWithMnemonic(seed,1);
-        
-        console.log(seed)
-        console.log(accounts)
-        
-        
-        const isValidSeed = utils.validateMnemonic(seed);
-        console.log(isValidSeed)
-
-        const mwallet = [
-            {Passphrase: seed}, 
-            {Account: accounts},     
-        ]
-        res.send(mwallet);
-        return;
-
-    })
-        // Generate Address with private key
-        /*
-        const pk= "b9c12d6d2b9c31d8547d73a6a58291304f6591494d9544bae9a34e06597326af";
-        const address = await utils.getAccountFromPrivateKey(pk);
-        console.log(address);
-
-        // validate pk
-        const pk= "your private key";
-        const isValidPK = utils.validatePrivateKey(pk);
-         
-        // Valid Address
-        const isValidAddress1 = utils.validateAddress("Thdhjxhxxbxnbnbnsvsjdb");
-        console.log(isValidAddress1) 
-       */
-
-        
-  
- 
-
-app.get('/api/m2wallet/', (req, res) => {
-     
- const mnemonic = Address.generateMnemonic();
-//console.log(mnemonic);
- const address = new Address(mnemonic, 0);
-//console.log(address.master);
- const addressInfo =  address.masterInfo;
- console.log(addressInfo);
-//console.log(address.createAddress())
-    
-const m2wallet = [
-    {addressInfo},
-]
-res.send(m2wallet);
-
-    return;
-    } );
-    
+} );
 
 
 
@@ -217,7 +122,7 @@ var CONTRACT = req.params.CONTRACT;
    {amount:amount} 
 ]
 res.send(transfer);
-
+  
 
 const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
 
@@ -248,60 +153,88 @@ async function main() {
 });
 
 
-// TRX Send Gas fee
+ // Get Tron Balance
 
-app.get('/api/sendgas/:privateKey/:BACCOUNT/:BAMOUNT', function(req, res) {
+ app.get('/api/usdtbalance/:privateKey/:CONTRACT/:Address', function(req, res) {
 
- 
     const HttpProvider = TronWeb.providers.HttpProvider;
     const fullNode = new HttpProvider("https://api.trongrid.io");
+    // const fullNode = new HttpProvider("http://192.168.1.162:8090");
     const solidityNode = new HttpProvider("https://api.trongrid.io");
     const eventServer = new HttpProvider("https://api.trongrid.io");
-    
+
     var privateKey = req.params.privateKey;
-    var bossaddress = req.params.BACCOUNT;
-    var bamount = req.params.BAMOUNT;
+    var address = req.params.Address;
+    var CONTRACT = req.params.CONTRACT;
     
-    
-       
-       const transfer = [
-        {privateKey:privateKey},
-        {bossaddress:bossaddress},
-       {bamount:bamount} 
-    ]
-    res.send(transfer);
-    
+
+    //const CONTRACT=  "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+    //const privateKey="e9bc7a332407d323e13b8c1272c103d8a676b749ba42ccc25f1eb915087cac59"
     const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
-    
-    
-    const memo = "tttttttttttttttransfer";
+    //const address = "TDrNh6PJvVHZmJSEc3nSTCvXHLN3V4Q5KT";
     
     async function main() {
+        const {abi} = await tronWeb.trx.getContract(CONTRACT);
+        
     
-        console.log(tronWeb.defaultAddress.base58, "=>", bossaddress);
+        const contract = tronWeb.contract(abi.entrys, CONTRACT);
     
-        const unSignedTxn = await tronWeb.transactionBuilder.sendTrx(bossaddress, bamount*1000000);
-        const unSignedTxnWithNote = await tronWeb.transactionBuilder.addUpdateData(unSignedTxn, memo, 'utf8');
-        const signedTxn = await tronWeb.trx.sign(unSignedTxnWithNote);
-        console.log("signed =>", signedTxn);
-        const ret = await tronWeb.trx.sendRawTransaction(signedTxn);
-        console.log("broadcast =>", ret);
+        const balance = await contract.methods.balanceOf(address).call();
+        console.log("balance:", balance.toString());
+    res.send(balance.toString());
     }
-    
     main().then(() => {
-            console.log("ok");
-        })
-        .catch((err) => {
-            console.log("error:", err);
-        });
+        console.log("ok");
+    })
+    .catch((err) => {
+        console.log("error:", err);
+    });
+      
+     return;
+    });
+
+
+ // Get Tron USDC Balance
+
+ app.get('/api/usdctronbalance/:privateKey/:CONTRACT/:Address', function(req, res) {
+
+    const HttpProvider = TronWeb.providers.HttpProvider;
+    const fullNode = new HttpProvider("https://api.trongrid.io");
+    // const fullNode = new HttpProvider("http://192.168.1.162:8090");
+    const solidityNode = new HttpProvider("https://api.trongrid.io");
+    const eventServer = new HttpProvider("https://api.trongrid.io");
+
+    var privateKey = req.params.privateKey;
+    var address = req.params.Address;
+    var CONTRACT = req.params.CONTRACT;
     
-        return;   
-        } );
+
+    //const CONTRACT=  "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8";
+    //const privateKey="e9bc7a332407d323e13b8c1272c103d8a676b749ba42ccc25f1eb915087cac59"
+    const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
+    //const address = "TDrNh6PJvVHZmJSEc3nSTCvXHLN3V4Q5KT";
+    
+    async function main() {
+        const {abi} = await tronWeb.trx.getContract(CONTRACT);
+        const contract = tronWeb.contract(abi.entrys, CONTRACT);
+        const balance = await contract.methods.balanceOf(address).call();
+        console.log("balance:", balance.toString());
+    res.send(balance.toString());
+    }
+    main().then(() => {
+        console.log("ok");
+    })
+    .catch((err) => {
+        console.log("error:", err);
+    });
+      
+     return;
+    });
 
 
-// getBalance
+    // USDC send
 
-app.get('/api/balance/:privateKey/:CONTRACT/:Address', function(req, res) {
+app.get('/api/sendusdc/:privateKey/:CONTRACT/:ACCOUNT/:AMOUNT', function(req, res) {
         
 
     const HttpProvider = TronWeb.providers.HttpProvider;
@@ -311,46 +244,40 @@ app.get('/api/balance/:privateKey/:CONTRACT/:Address', function(req, res) {
     const eventServer = new HttpProvider("https://api.trongrid.io");
     
     var privateKey = req.params.privateKey;
+    var receiveaddress = req.params.ACCOUNT;
+    var amount = req.params.AMOUNT;
     var CONTRACT = req.params.CONTRACT;
-    var Address = req.params.Address;
     
        
-       const details = ([
-        {privateKey:privateKey},
+       const transfer = [
         {CONTRACT:CONTRACT},
-        {Address:Address}, 
-
-    ])
-    res.json(details);
-
-   
-    
+        {privateKey:privateKey},
+        {receiveaddress:receiveaddress},
+       {amount:amount} 
+    ]
+    res.send(transfer);
+      
     
     const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
     
-   
+    
     async function main() {
-        
         const {
             abi
         } = await tronWeb.trx.getContract(CONTRACT);
         // console.log(JSON.stringify(abi));
     
         const contract = tronWeb.contract(abi.entrys, CONTRACT);
-          
-        const balance = (await contract.methods.balanceOf(Address).call());
-        console.log("balance:", balance.toString());
-        
-        const detailb = ([
-            {balance:balance}, 
     
-        ])
-        res.end(detailb);
-        
+        const balance = await contract.methods.balanceOf(receiveaddress).call();
+        console.log("balance:", balance.toString());
+    
+        const resp = await contract.methods.transfer(receiveaddress, amount*1000000).send();
+        console.log("transfer:", resp);
      }
+    
        main().then(() => {
             console.log("ok");
-           
         })
         .catch((err) => {
             console.log("error:", err);
@@ -358,57 +285,211 @@ app.get('/api/balance/:privateKey/:CONTRACT/:Address', function(req, res) {
         
      return;
     });
-        
+
+
+
+
+
+
+// create BTC wallet
+app.get('/api/multi/btcwallet', async (req, res)  => {
+ 
+    const wallet = multichainWallet.createWallet({
+        derivationPath: "", // 
+        network: 'bitcoin',
+      });
     
+      console.log(wallet)
+      res.json(wallet);
+      return;
+});
 
-// Get Balance
-    app.get('/api/balance/:privateKey/:CONTRACT/:address/:balance', function(req, res) {
-        
+// Generate an Bitcoin wallet from mnemonic.
+app.get('/api/multi/btcwalletmn/:Mnemonic', async (req, res)  => {
+ 
+    var mnemonic = req.params.Mnemonic;
+      const wallet = multichainWallet.generateWalletFromMnemonic({
+    mnemonic: mnemonic,
+    derivationPath: "", 
+    network: 'bitcoin-testnet',
+  });
+    
+      //console.log(wallet)
+      res.json(wallet);
+      return;
+});
 
-        const HttpProvider = TronWeb.providers.HttpProvider;
-        const fullNode = new HttpProvider("https://api.trongrid.io");
-        // const fullNode = new HttpProvider("http://192.168.1.162:8090");
-        const solidityNode = new HttpProvider("https://api.trongrid.io");
-        const eventServer = new HttpProvider("https://api.trongrid.io");
-        
-        var privateKey = req.params.privateKey;
-        var CONTRACT = req.params.CONTRACT;
-        var address = req.params.address;
-        
-           
-        
-        const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
-        
-        
-        async function main() {
-            const {
-                abi
-            } = await tronWeb.trx.getContract(CONTRACT);
-            // console.log(JSON.stringify(abi));
-        
-            const contract = tronWeb.contract(abi.entrys, CONTRACT);
-        
-            const balance = await contract.methods.balanceOf(address).call();
-            console.log("balance:", balance.toString());
-            res.json(balance)
-         }
-        
-           main().then(() => {
-                console.log("ok");
-            })
-            .catch((err) => {
-                console.log("error:", err);
-            });
-            
-         return;
-        });
+// get BTC Balance
+app.get('/api/multi/balance/:Address', async (req, res)  => {
+    var Address = req.params.Address;
+    const data = await multichainWallet.getBalance({
+    address:Address,
+    
+    network: 'bitcoin-testnet', 
+  });
+    
+     // console.log(data)
+      res.json(data);
+      return;
+});
 
+ // Transferring BTC from one address to another.
+app.get('/api/multi/sendbtc/:PrivateKey/:Address/:Amount', async (req, res)  => {
+    var privateKey = req.params.PrivateKey;
+    var recipientAddress = req.params.Address;
+    var amount = req.params.Amount;
+
+    const response = await multichainWallet.transfer({
+
+     privateKey: privateKey,
+     recipientAddress: recipientAddress,
+     amount: amount,
+    network: 'bitcoin-testnet', 
+    fee: 10000, 
+    subtractFee: false // Optional param default value is false
+  });
+      //console.log(response)
+      res.json(response);
+      return;
+});
+
+
+// Ethereum wallet setup 
+
+app.get('/api/multi/ethwallet', async (req, res)  => {
+ 
+    const wallet = multichainWallet.createWallet({
+        derivationPath: "", 
+        network: 'ethereum',
+      });
+    
+      //console.log(wallet)
+      res.json(wallet);
+      return;
+});
+
+// Generate an Ethereum wallet from mnemonic.
+app.get('/api/multi/ethwalletmn/:Mnemonic', async (req, res)  => {
+ 
+    var mnemonic = req.params.Mnemonic;
+    
+      const wallet = multichainWallet.generateWalletFromMnemonic({
+    mnemonic: mnemonic,
+    derivationPath: "", 
+    network: 'ethereum',
+  });
+    
+     // console.log(wallet)
+      res.json(wallet);
+      return;
+});
+
+
+
+// get ETH Balance
+app.get('/api/multi/ethBalance/:Address', async (req, res)  => {
+    var Address = req.params.Address;
+
+// Get the ETH balance of an address.
+const ethdata = await multichainWallet.getBalance({
+    address: Address,
+    network: 'ethereum',
+    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
+  }); 
+  
+      //console.log(ethdata)
+      res.json(ethdata);
+      return;
+});
+
+
+app.get('/api/multi/sendeth/:PrivateKey/:Address/:Amount/:gasPrice', async (req, res)  => {
+    var privateKey = req.params.PrivateKey;
+    var recipientAddress = req.params.Address;
+    var amount = req.params.Amount;
+    var gasPrice = req.params.gasPrice;
+     
+const transfer = await multichainWallet.transfer({
+   
+    recipientAddress:recipientAddress,
+    amount: amount, 
+    network: 'ethereum',
+    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
+    privateKey: privateKey,
+    gasPrice: gasPrice, 
+    data: 'Money for transportation', 
+  }); 
+      //console.log(transfer)
+      res.json(transfer);
+      return;
+});
+
+
+
+
+// get USDC ERC20 Balance
+app.get('/api/multi/usdcBalance/:Address', async (req, res)  => {
+    var Address = req.params.Address;
+
+// Get the balance of an ERC20 token.
+const data = await multichainWallet.getBalance({
+    address: Address, 
+    network: 'ethereum',
+    rpcUrl: 'https://rpc.ankr.com/eth',
+    tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  }); 
+      //console.log(data)
+      res.json(data);
+      return;
+});
+
+// Transferring ERC20 tokens(USDC) from one address to another.
+app.get('/api/multi/sendusdc/:PrivateKey/:Address/:Amount/:GasPrice', async (req, res)  => {
+    var privateKey = req.params.PrivateKey;
+    var recipientAddress = req.params.Address;
+    var amount = req.params.Amount;
+    var gasPrice = req.params.GasPrice;
+     
+    // Transferring ERC20 tokens(USDC) from one address to another.
+const transfer = await multichainWallet.transfer({
+    recipientAddress:recipientAddress, 
+    amount: amount, 
+    network: 'ethereum',
+    rpcUrl: 'https://rpc.ankr.com/eth',
+    privateKey: privateKey,
+      
+    gasPrice: gasPrice, 
+    tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  }); 
+      //console.log(transfer)
+      res.json(transfer);
+      return;
+});
+
+
+
+// Error
+app.use((req, res, next) =>{
+    const error = new Error('Not found');
+    error.status(404);
+    next(error);
+})
+
+app.use((error,req, res, next) =>{
+    res.status(error.status || 500);
+    res.json({
+        error:{
+            message:error.message
+        }
+    });
+    
+});
 
 
 
 
 //PORT
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listen on port ${port}`))
 
 

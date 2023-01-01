@@ -1,11 +1,9 @@
 //const { createWallet} = require("./wallet");
 const { PrivateKey } = require("bitcore-lib");
 const Mnemonic = require("bitcore-mnemonic");
+
+
 const TronWeb = require('tronweb');
-//const hdWallet = require('tron-wallet-hd');
-const Address =  require ('tron-address-mnemonic');
-const CryptoAccount = require("send-crypto");
-const multichainWallet = require('multichain-crypto-wallet');
 
 const bodyPaser = require('body-parser');
 const express = require('express');
@@ -19,7 +17,6 @@ app.use(bodyPaser.urlencoded())
 app.use(bodyPaser.json());
 
 
-
 // get Address tronweb
 app.get('/api/mtronweb', (req, res) => {
     const RandomAccount = TronWeb.createRandom()
@@ -28,39 +25,27 @@ app.get('/api/mtronweb', (req, res) => {
     return;
 } );
 
-// get USDT Address and Pk from mnemonic
-app.get('/api/usdtwalletmn/:Mnemonic', (req, res) => {
+// get Address tronweb
+app.get('/api/tronwebPk/:PrivateKey', (req, res) => {
 
-   var mnemonic = req.params.Mnemonic;
-   const wallet = TronWeb.fromMnemonic(mnemonic)
-  
-    //console.log(wallet);
-    res.json(wallet);
+const HttpProvider = TronWeb.providers.HttpProvider;
+const fullNode = new HttpProvider("https://api.trongrid.io");
+const solidityNode = new HttpProvider("https://api.trongrid.io");
+const eventServer = new HttpProvider("https://api.trongrid.io");
+const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
+
+var privateKey = req.params.PrivateKey;
+
+    const address = tronWeb.address.fromPrivateKey(privateKey);
+    
+    res.json(address);
     return;
-
 } );
 
-/*
-app.use((req, res, next) =>{
-    const error = new Error('Not found');
-    error.status(404);
-    next(error);
-})
-
-app.use((error,req, res, next) =>{
-    res.status(error.status || 500);
-    res.json({
-        error:{
-            message:error.message
-        }
-    });
-    
-});
-
-*/
 
 
-   
+
+
 
 // TRX Send
 
@@ -172,209 +157,119 @@ async function main() {
 
 
 
+// Get Tron USDC Balance
 
-/*
-//https://github.com/iamnotstatic/multichain-crypto-wallet#native-coins
-// https://www.npmjs.com/package/multichain-crypto-wallet
-// Bitcoin  wallet setup 
+app.get('/api/usdc_balance/:privateKey/:CONTRACT/:Address', function(req, res) {
 
-// create BTC wallet
-app.get('/api/multi/btcwallet', async (req, res)  => {
+    const HttpProvider = TronWeb.providers.HttpProvider;
+    const fullNode = new HttpProvider("https://api.trongrid.io");
+    // const fullNode = new HttpProvider("http://192.168.1.162:8090");
+    const solidityNode = new HttpProvider("https://api.trongrid.io");
+    const eventServer = new HttpProvider("https://api.trongrid.io");
+
+    var privateKey = req.params.privateKey;
+    var address = req.params.Address;
+    var CONTRACT = req.params.CONTRACT;
+    
+    const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
+    
+    
+    async function main() {
+        const {abi} = await tronWeb.trx.getContract(CONTRACT);
+        const contract = tronWeb.contract(abi.entrys, CONTRACT);
+        const balance = await contract.methods.balanceOf(address).call();
+        console.log("balance:", balance.toString());
+    res.send(balance.toString());
+    }
+    main().then(() => {
+        console.log("ok");
+    })
+    .catch((err) => {
+        console.log("error:", err);
+    });
+      
+     return;
+    });
+
+
+    // USDC send
+
+app.get('/api/sendusdc/:privateKey/:CONTRACT/:ACCOUNT/:AMOUNT', function(req, res) {
+        
+
+    const HttpProvider = TronWeb.providers.HttpProvider;
+    const fullNode = new HttpProvider("https://api.trongrid.io");
+    // const fullNode = new HttpProvider("http://192.168.1.162:8090");
+    const solidityNode = new HttpProvider("https://api.trongrid.io");
+    const eventServer = new HttpProvider("https://api.trongrid.io");
+    
+    var privateKey = req.params.privateKey;
+    var receiveaddress = req.params.ACCOUNT;
+    var amount = req.params.AMOUNT;
+    var CONTRACT = req.params.CONTRACT;
+    
+       
+       const transfer = [
+        {CONTRACT:CONTRACT},
+        {privateKey:privateKey},
+        {receiveaddress:receiveaddress},
+       {amount:amount} 
+    ]
+    res.send(transfer);
+      
+    
+    const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
+    
+    
+    async function main() {
+        const {
+            abi
+        } = await tronWeb.trx.getContract(CONTRACT);
+        // console.log(JSON.stringify(abi));
+    
+        const contract = tronWeb.contract(abi.entrys, CONTRACT);
+    
+        const balance = await contract.methods.balanceOf(receiveaddress).call();
+        console.log("balance:", balance.toString());
+    
+        const resp = await contract.methods.transfer(receiveaddress, amount*1000000).send();
+        console.log("transfer:", resp);
+     }
+    
+       main().then(() => {
+            console.log("ok");
+        })
+        .catch((err) => {
+            console.log("error:", err);
+        });
+        
+     return;
+    });
+
+
  
-    const wallet = multichainWallet.createWallet({
-        derivationPath: "", // Leave empty to use default derivation path
-        network: 'bitcoin',
-      });
-    
-      console.log(wallet)
-      res.json(wallet);
-      return;
+
+
+
+
+// Error
+app.use((req, res, next) =>{
+    const error = new Error('Not found');
+    error.status(404);
+    next(error);
+    return;
+})
+
+app.use((error,req, res, next) =>{
+    res.status(error.status || 500);
+    res.json({
+        error:{
+            message:error.message
+        }
+    });
+    return;
 });
 
-// Generate an Bitcoin wallet from mnemonic.
-app.get('/api/multi/btcwalletmn/:Mnemonic', async (req, res)  => {
- 
-    var mnemonic = req.params.Mnemonic;
-    
-      const wallet = multichainWallet.generateWalletFromMnemonic({
-    mnemonic: mnemonic,
-      //'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
-    derivationPath: "", // Leave empty to use default derivation path
-    network: 'bitcoin-testnet',
-  });
-    
-      //console.log(wallet)
-      res.json(wallet);
-      return;
-});
-
-// get BTC Balance
-app.get('/api/multi/balance/:Address', async (req, res)  => {
-    var Address = req.params.Address;
-    // Get the BTC balance of an address.
-    const data = await multichainWallet.getBalance({
-    address:Address,
-    //address: '2NAhbS79dEUeqcnbC27UppwnjoVSwET5bat',
-    //address:'1HB5XMLmzFVj8ALj6mfBsbifRoD4miY36v',
-    network: 'bitcoin-testnet', // 'bitcoin' or 'bitcoin-testnet'
-  });
-    
-     // console.log(data)
-      res.json(data);
-      return;
-});
-
-
-app.get('/api/multi/sendbtc/:PrivateKey/:Address/:Amount', async (req, res)  => {
-    var privateKey = req.params.PrivateKey;
-    var recipientAddress = req.params.Address;
-    var amount = req.params.Amount;
-     // Transferring BTC from one address to another.
-    const response = await multichainWallet.transfer({
-
-    //privateKey: 'KymBvSspJW4NfLnJwgcBfzCV75PuXiv1ggcXLmRTpaa3wRLrgQJo',
-    //recipientAddress: 'mgPVEgijcmNTTzZFCa8pwpEmWbaTbA2ega',
-    //amount: 0.001,
-     privateKey: privateKey,
-     recipientAddress: recipientAddress,
-     amount: amount,
-    network: 'bitcoin-testnet', // 'bitcoin' or 'bitcoin-testnet'
-    fee: 10000, // Optional param default value is 10000
-    subtractFee: false // Optional param default value is false
-  });
-      //console.log(response)
-      res.json(response);
-      return;
-});
-
-
-// Ethereum wallet setup 
-
-app.get('/api/multi/ethwallet', async (req, res)  => {
- 
-    const wallet = multichainWallet.createWallet({
-        derivationPath: "", // Leave empty to use default derivation path
-        network: 'ethereum',
-      });
-    
-      //console.log(wallet)
-      res.json(wallet);
-      return;
-});
-
-// Generate an Ethereum wallet from mnemonic.
-app.get('/api/multi/ethwalletmn/:Mnemonic', async (req, res)  => {
- 
-    var mnemonic = req.params.Mnemonic;
-    
-      const wallet = multichainWallet.generateWalletFromMnemonic({
-    mnemonic: mnemonic,
-      //'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
-    derivationPath: "", // Leave empty to use default derivation path
-    network: 'ethereum',
-  });
-    
-     // console.log(wallet)
-      res.json(wallet);
-      return;
-});
-
-
-
-// get ETH Balance
-app.get('/api/multi/ethBalance/:Address', async (req, res)  => {
-    var Address = req.params.Address;
-
-// Get the ETH balance of an address.
-const ethdata = await multichainWallet.getBalance({
-    //address: '0x2455eC6700092991Ce0782365A89d5Cd89c8Fa22',
-    address: Address,
-    network: 'ethereum',
-    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
-  }); // NOTE - For otherEVM compatible blockchains all you have to do is change the rpcUrl.
-  
-      //console.log(ethdata)
-      res.json(ethdata);
-      return;
-});
-
-
-app.get('/api/multi/sendeth/:PrivateKey/:Address/:Amount/:gasPrice', async (req, res)  => {
-    var privateKey = req.params.PrivateKey;
-    var recipientAddress = req.params.Address;
-    var amount = req.params.Amount;
-    var gasPrice = req.params.gasPrice;
-     // Transferring ETH from one address to another.
-const transfer = await multichainWallet.transfer({
-   
-    recipientAddress:recipientAddress,// '0x9e2eC09b4729d840C53775eEa06aEC0883770b74',
-    amount: amount, // 0.001,
-    network: 'ethereum',
-    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
-    privateKey: privateKey,
-      //'0f9e5c0bee6c7d06b95204ca22dea8d7f89bb04e8527a2c59e134d185d9af8ad',
-    gasPrice: gasPrice, // Gas price is in Gwei. Leave empty to use default gas price
-    data: 'Money for transportation', // Send a message
-  }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
-  
-      //console.log(transfer)
-      res.json(transfer);
-      return;
-});
-
-
-
-
-// get USDC ERC20 Balance
-app.get('/api/multi/usdcBalance/:Address', async (req, res)  => {
-    var Address = req.params.Address;
-
-// Get the balance of an ERC20 token.
-const data = await multichainWallet.getBalance({
-    address: Address, // '0x2455eC6700092991Ce0782365A89d5Cd89c8Fa22',
-    network: 'ethereum',
-    rpcUrl: 'https://rpc.ankr.com/eth',
-    tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
-  
-      //console.log(data)
-      res.json(data);
-      return;
-});
-
-// Transferring ERC20 tokens(USDC) from one address to another.
-app.get('/api/multi/sendusdc/:PrivateKey/:Address/:Amount/:GasPrice', async (req, res)  => {
-    var privateKey = req.params.PrivateKey;
-    var recipientAddress = req.params.Address;
-    var amount = req.params.Amount;
-    var gasPrice = req.params.GasPrice;
-     
-    // Transferring ERC20 tokens(USDC) from one address to another.
-const transfer = await multichainWallet.transfer({
-    recipientAddress:recipientAddress, //'0x2455eC6700092991Ce0782365A89d5Cd89c8Fa22',
-    amount: amount, // 10,
-    network: 'ethereum',
-    rpcUrl: 'https://rpc.ankr.com/eth',
-    privateKey: privateKey,
-      //'0f9e5c0bee6c7d06b95204ca22dea8d7f89bb04e8527a2c59e134d185d9af8ad',
-    gasPrice: gasPrice, // Gas price is in Gwei. leave empty to use default gas price
-    tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  }); // NOTE - For other EVM compatible blockchains all you have to do is change the rpcUrl.
-
-      //console.log(transfer)
-      res.json(transfer);
-      return;
-});
-
-
-
-
-
-    
-
-
-
-*/
 
 
 
