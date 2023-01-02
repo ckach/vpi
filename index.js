@@ -25,25 +25,6 @@ app.get('/api/mtronweb', (req, res) => {
     return;
 } );
 
-// get Address tronweb
-app.get('/api/tronwebPk/:PrivateKey', (req, res) => {
-
-const HttpProvider = TronWeb.providers.HttpProvider;
-const fullNode = new HttpProvider("https://api.trongrid.io");
-const solidityNode = new HttpProvider("https://api.trongrid.io");
-const eventServer = new HttpProvider("https://api.trongrid.io");
-const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
-
-var privateKey = req.params.PrivateKey;
-
-    const address = tronWeb.address.fromPrivateKey(privateKey);
-    
-    res.json(address);
-    return;
-} );
-
-
-
 
 
 
@@ -118,14 +99,6 @@ var amount = req.params.AMOUNT;
 var CONTRACT = req.params.CONTRACT;
 
    
-   const transfer = [
-    {CONTRACT:CONTRACT},
-    {privateKey:privateKey},
-    {receiveaddress:receiveaddress},
-   {amount:amount} 
-]
-res.send(transfer);
-  
 
 const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
 
